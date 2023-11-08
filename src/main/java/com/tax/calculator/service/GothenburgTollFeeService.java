@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 
@@ -15,36 +16,38 @@ import java.util.List;
 public class GothenburgTollFeeService implements TollSystem {
     public int calculateTollFee(Vehicle vehicle, List<LocalDateTime> times) {
 
-        int totalCost = 0;
-        int lastTollRate = 0;
+        int total = 0;
+        System.out.println(vehicle.getVehicleType() + " " + isTollFreeVehicle(vehicle));
+        if(isTollFreeDate(times.get(0).toLocalDate()) || isTollFreeVehicle(vehicle)) {
+            System.out.println("This is inside");
+            return 0;
+        }
 
+        int[][] rateRanges = getTollRate();
 
-        for (int i = 0; i < times.size() - 1; i++) {
-            LocalDateTime start = times.get(i);
-            LocalDateTime end = times.get(i + 1);
+        for (int i = 0; i < times.size() - 1; i += 2) {
+            LocalDateTime entryTime = times.get(i);
+            LocalDateTime exitTime = times.get(i + 1);
 
-            long minutes = start.until(end, java.time.temporal.ChronoUnit.MINUTES);
+            while (entryTime.isBefore(exitTime)) {
+                LocalTime currentTime = entryTime.toLocalTime();
 
-            int startHour = start.getHour();
-            int startMinute = start.getMinute();
-            int endHour = end.getHour();
-            int endMinute = end.getMinute();
+                for (int[] range : rateRanges) {
+                    LocalTime rangeStartTime = LocalTime.of(range[0], range[1]);
+                    LocalTime rangeEndTime = LocalTime.of(range[2], range[3]);
+                    double rangeRate = range[4];
 
-            int cost = getTollRate(startHour, startMinute);
-            for (int hour = startHour; hour <= endHour; hour++) {
-                for (int min = (hour == startHour ? startMinute : 0); min <= (hour == endHour ? endMinute : 59); min++) {
-                    cost = Math.max(cost, getTollRate(hour, min));
+                    if (!currentTime.isBefore(rangeStartTime) && !currentTime.isAfter(rangeEndTime)) {
+                        total += rangeRate;
+                        entryTime = entryTime.withHour(rangeEndTime.getHour()).withMinute(rangeEndTime.getMinute());
+                    }
                 }
-            }
 
-            lastTollRate = Math.max(lastTollRate, cost);
-
-            if (i == 0 || minutes >= 60) {
-                totalCost += lastTollRate;
+                entryTime = entryTime.plusMinutes(1);
             }
         }
 
-        return Math.min(totalCost, 60);
+        return Math.min(total, 60);
     }
 
     @Override
@@ -53,12 +56,8 @@ public class GothenburgTollFeeService implements TollSystem {
     }
 
     @Override
-    public boolean isTollFreeDate(LocalDate date) {
-        return new GothenburgHolidays().isTollFreeDate(date);
-    }
+    public boolean isTollFreeDate(LocalDate date) {return new GothenburgHolidays().isTollFreeDate(date);}
 
-    int getTollRate(int hour, int min) {
-        return new GothenburgRates().getRates(hour, min);
-    }
+    public int[][] getTollRate(){ return new GothenburgRates().getRates();}
 
 }

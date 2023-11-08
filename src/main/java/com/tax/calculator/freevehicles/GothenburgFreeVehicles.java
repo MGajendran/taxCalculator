@@ -13,6 +13,7 @@ public class GothenburgFreeVehicles implements FreeVehicles{
         freeVehicles.add("Diplomat");
         freeVehicles.add("Foreign");
         freeVehicles.add("Military");
+        freeVehicles.add("Bus");
     }
     private List<String > freeVehicles = new ArrayList<>();
     public void setFreeVehicles(List<String> freeVehicles) {

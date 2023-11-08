@@ -1,6 +1,8 @@
 package com.tax.calculator.rates;
 
+import java.time.LocalTime;
+
 public interface CityRates {
 
-    int getRates(int hour, int min);
+    int[][] getRates();
 }

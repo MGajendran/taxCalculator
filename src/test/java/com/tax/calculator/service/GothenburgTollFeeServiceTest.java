@@ -21,40 +21,55 @@ public class GothenburgTollFeeServiceTest {
     }
 
     @Test
-    public void testCalculateTollFee_FreeVehicleAndDate() {
+    public void testCalculateTollFee_holidayTest() { // Holiday test
         List<LocalDateTime> times = new ArrayList<>();
-        times.add(LocalDateTime.of(2023, 11, 7, 8, 0));
-        times.add(LocalDateTime.of(2023, 11, 7, 9, 30));
+        times.add(LocalDateTime.of(2023, 1, 1, 8, 0));
+        times.add(LocalDateTime.of(2023, 1, 1, 9, 30));
 
         int calculatedFee = tollFeeService.calculateTollFee(mockVehicle, times);
 
-        int expectedFee = 13;
+        int expectedFee = 0;
 
         assertEquals(expectedFee, calculatedFee);
     }
 
     @Test
-    public void testCalculateTollFee_StandardRates() {
+    public void testCalculateTollFee_FreeVehicleTest() { // Free vehicle test
+
+        mockVehicle = new Vehicle("Bus");
         List<LocalDateTime> times = new ArrayList<>();
         times.add(LocalDateTime.of(2023, 11, 7, 8, 0));
         times.add(LocalDateTime.of(2023, 11, 7, 15, 20));
 
         int calculatedFee = tollFeeService.calculateTollFee(mockVehicle, times);
 
-        int expectedFee = 13;
+        int expectedFee = 0;
 
         assertEquals(expectedFee, calculatedFee);
     }
 
     @Test
-    public void testCalculateTollFee_CustomRates() {
+    public void testCalculateTollFee_PriceOverDayPrice() { // price over 60
         List<LocalDateTime> times = new ArrayList<>();
         times.add(LocalDateTime.of(2023, 11, 7, 6, 0));
         times.add(LocalDateTime.of(2023, 11, 7, 15, 00));
 
         int calculatedFee = tollFeeService.calculateTollFee(mockVehicle, times);
 
-        int expectedFee = 18;
+        int expectedFee = 60;
+
+        assertEquals(expectedFee, calculatedFee);
+    }
+
+    @Test
+    public void testCalculateTollFee_exactValurTest() { // correct value
+        List<LocalDateTime> times = new ArrayList<>();
+        times.add(LocalDateTime.of(2023, 11, 7, 6, 0));
+        times.add(LocalDateTime.of(2023, 11, 7, 8, 0));
+
+        int calculatedFee = tollFeeService.calculateTollFee(mockVehicle, times);
+
+        int expectedFee = 39;
 
         assertEquals(expectedFee, calculatedFee);
     }
